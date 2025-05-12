@@ -1,24 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, getDocs, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { db } from './firebase';
 
 export default function DummyHyttebok() {
     const [innlegg, setInnlegg] = useState([]);
     const [nyttNavn, setNyttNavn] = useState('');
     const [nyttTekst, setNyttTekst] = useState('');
-    const [loading, setLoading] = useState(true);
-
-    const hentInnlegg = async () => {
-        setLoading(true);
-        const q = query(collection(db, 'innlegg'), orderBy('opprettet', 'desc'));
-        const snapshot = await getDocs(q);
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setInnlegg(data);
-        setLoading(false);
-    };
 
     useEffect(() => {
-        hentInnlegg();
+        const q = query(collection(db, 'innlegg'), orderBy('opprettet', 'desc'));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setInnlegg(data);
+        });
+        return () => unsubscribe();
     }, []);
 
     const leggTilInnlegg = async () => {
@@ -34,7 +29,6 @@ export default function DummyHyttebok() {
             });
             setNyttNavn('');
             setNyttTekst('');
-            hentInnlegg();
         } catch (error) {
             alert('Kunne ikke lagre innlegg: ' + error.message);
         }
@@ -60,18 +54,16 @@ export default function DummyHyttebok() {
             <button onClick={leggTilInnlegg} style={{ marginTop: '0.5rem' }}>Legg til innlegg</button>
 
             <h3>Tidligere innlegg:</h3>
-            {loading ? <p>Laster innlegg...</p> : (
+            {innlegg.length === 0 ? (
+                <p>Ingen innlegg enda. Vær den første!</p>
+            ) : (
                 <ul>
-                    {innlegg.length === 0 ? (
-                        <p>Ingen innlegg enda. Vær den første!</p>
-                    ) : (
-                        innlegg.map((innlegg) => (
-                            <li key={innlegg.id} style={{ borderBottom: '1px solid #ccc', marginBottom: '1rem' }}>
-                                <strong>{innlegg.navn}</strong> ({innlegg.opprettet?.seconds ? new Date(innlegg.opprettet.seconds * 1000).toLocaleDateString() : 'Ukjent dato'}):<br />
-                                {innlegg.tekst}
-                            </li>
-                        ))
-                    )}
+                    {innlegg.map((innlegg) => (
+                        <li key={innlegg.id} style={{ borderBottom: '1px solid #ccc', marginBottom: '1rem' }}>
+                            <strong>{innlegg.navn}</strong> ({innlegg.opprettet?.seconds ? new Date(innlegg.opprettet.seconds * 1000).toLocaleDateString() : 'Ukjent dato'}):<br />
+                            {innlegg.tekst}
+                        </li>
+                    ))}
                 </ul>
             )}
         </div>
