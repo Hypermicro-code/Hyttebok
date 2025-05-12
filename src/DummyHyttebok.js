@@ -1,27 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, onSnapshot, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
-
-// Sett din egen hemmelige kode her (samme som du legger i QR-lenken)
-const TILLATT_NOKKEL = 'HEMMELIGKODE123';
 
 export default function DummyHyttebok() {
     const [innlegg, setInnlegg] = useState([]);
     const [nyttNavn, setNyttNavn] = useState('');
     const [nyttTekst, setNyttTekst] = useState('');
+    const [tillatNokkel, setTillatNokkel] = useState('');
     const [harTilgang, setHarTilgang] = useState(false);
 
     useEffect(() => {
-        // Sjekk etter nøkkel i URL
-        const params = new URLSearchParams(window.location.search);
-        const hytteKey = params.get('hytteKey');
-        if (hytteKey === TILLATT_NOKKEL) {
-            setHarTilgang(true);
-        } else {
-            setHarTilgang(false);
-        }
+        // Hent nøkkel fra Firestore
+        const hentNokkel = async () => {
+            const docRef = doc(db, 'config', 'hytte1');
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const lagretNokkel = docSnap.data().hytteKey;
+                setTillatNokkel(lagretNokkel);
 
-        // Alltid vis innlegg, men kun skriv om nøkkel er OK
+                // Sjekk om URL har riktig nøkkel
+                const params = new URLSearchParams(window.location.search);
+                const hytteKey = params.get('hytteKey');
+                if (hytteKey === lagretNokkel) {
+                    setHarTilgang(true);
+                } else {
+                    setHarTilgang(false);
+                }
+            } else {
+                console.warn('Ingen nøkkel lagret i Firestore');
+            }
+        };
+        hentNokkel();
+
+        // Lytt til innlegg
         const q = query(collection(db, 'innlegg'), orderBy('opprettet', 'desc'));
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
