@@ -6,7 +6,7 @@ import { db } from './firebase';
 export default function AdminQRConfig() {
     const [hytteKey, setHytteKey] = useState('');
     const [qrDataUrl, setQrDataUrl] = useState('');
-    const [netlifyUrl] = useState('https://din-hyttebok.netlify.app'); // Sett din Netlify-URL her
+    const [netlifyUrl] = useState('https://hyttebok.netlify.app'); // Sett din Netlify-URL her
 
     useEffect(() => {
         // Hent nøkkel fra Firestore ved oppstart
