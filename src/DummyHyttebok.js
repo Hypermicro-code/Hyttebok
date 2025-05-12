@@ -1,28 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { collection, addDoc, getDocs, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { db } from './firebase';
 
 export default function DummyHyttebok() {
-    const [innlegg, setInnlegg] = useState([
-        { id: 1, navn: 'Per', dato: '2025-05-12', tekst: 'Fin helg på hytta, flott vær og mye fisk!' },
-        { id: 2, navn: 'Kari', dato: '2025-05-05', tekst: 'Familietur med bål og pølser. Veldig koselig!' },
-    ]);
-
+    const [innlegg, setInnlegg] = useState([]);
     const [nyttNavn, setNyttNavn] = useState('');
     const [nyttTekst, setNyttTekst] = useState('');
 
-    const leggTilInnlegg = () => {
+    useEffect(() => {
+        const hentInnlegg = async () => {
+            const q = query(collection(db, 'innlegg'), orderBy('opprettet', 'desc'));
+            const snapshot = await getDocs(q);
+            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setInnlegg(data);
+        };
+        hentInnlegg();
+    }, []);
+
+    const leggTilInnlegg = async () => {
         if (!nyttTekst.trim()) {
             alert('Skriv inn en melding!');
             return;
         }
-        const nyttInnlegg = {
-            id: innlegg.length + 1,
+        await addDoc(collection(db, 'innlegg'), {
             navn: nyttNavn || 'Gjest',
-            dato: new Date().toISOString().split('T')[0],
             tekst: nyttTekst,
-        };
-        setInnlegg([nyttInnlegg, ...innlegg]);
+            opprettet: serverTimestamp(),
+        });
         setNyttNavn('');
         setNyttTekst('');
+        // Hent på nytt etter lagring
+        const q = query(collection(db, 'innlegg'), orderBy('opprettet', 'desc'));
+        const snapshot = await getDocs(q);
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setInnlegg(data);
     };
 
     return (
@@ -48,7 +59,7 @@ export default function DummyHyttebok() {
             <ul>
                 {innlegg.map((innlegg) => (
                     <li key={innlegg.id} style={{ borderBottom: '1px solid #ccc', marginBottom: '1rem' }}>
-                        <strong>{innlegg.navn}</strong> ({innlegg.dato}):<br />
+                        <strong>{innlegg.navn}</strong> ({new Date(innlegg.opprettet?.seconds * 1000).toLocaleDateString()}):<br />
                         {innlegg.tekst}
                     </li>
                 ))}
@@ -56,4 +67,3 @@ export default function DummyHyttebok() {
         </div>
     );
 }
-
