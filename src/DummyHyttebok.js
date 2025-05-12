@@ -6,14 +6,18 @@ export default function DummyHyttebok() {
     const [innlegg, setInnlegg] = useState([]);
     const [nyttNavn, setNyttNavn] = useState('');
     const [nyttTekst, setNyttTekst] = useState('');
+    const [loading, setLoading] = useState(true);
+
+    const hentInnlegg = async () => {
+        setLoading(true);
+        const q = query(collection(db, 'innlegg'), orderBy('opprettet', 'desc'));
+        const snapshot = await getDocs(q);
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setInnlegg(data);
+        setLoading(false);
+    };
 
     useEffect(() => {
-        const hentInnlegg = async () => {
-            const q = query(collection(db, 'innlegg'), orderBy('opprettet', 'desc'));
-            const snapshot = await getDocs(q);
-            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setInnlegg(data);
-        };
         hentInnlegg();
     }, []);
 
@@ -22,18 +26,18 @@ export default function DummyHyttebok() {
             alert('Skriv inn en melding!');
             return;
         }
-        await addDoc(collection(db, 'innlegg'), {
-            navn: nyttNavn || 'Gjest',
-            tekst: nyttTekst,
-            opprettet: serverTimestamp(),
-        });
-        setNyttNavn('');
-        setNyttTekst('');
-        // Hent på nytt etter lagring
-        const q = query(collection(db, 'innlegg'), orderBy('opprettet', 'desc'));
-        const snapshot = await getDocs(q);
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setInnlegg(data);
+        try {
+            await addDoc(collection(db, 'innlegg'), {
+                navn: nyttNavn || 'Gjest',
+                tekst: nyttTekst,
+                opprettet: serverTimestamp(),
+            });
+            setNyttNavn('');
+            setNyttTekst('');
+            hentInnlegg();
+        } catch (error) {
+            alert('Kunne ikke lagre innlegg: ' + error.message);
+        }
     };
 
     return (
@@ -56,14 +60,20 @@ export default function DummyHyttebok() {
             <button onClick={leggTilInnlegg} style={{ marginTop: '0.5rem' }}>Legg til innlegg</button>
 
             <h3>Tidligere innlegg:</h3>
-            <ul>
-                {innlegg.map((innlegg) => (
-                    <li key={innlegg.id} style={{ borderBottom: '1px solid #ccc', marginBottom: '1rem' }}>
-                        <strong>{innlegg.navn}</strong> ({new Date(innlegg.opprettet?.seconds * 1000).toLocaleDateString()}):<br />
-                        {innlegg.tekst}
-                    </li>
-                ))}
-            </ul>
+            {loading ? <p>Laster innlegg...</p> : (
+                <ul>
+                    {innlegg.length === 0 ? (
+                        <p>Ingen innlegg enda. Vær den første!</p>
+                    ) : (
+                        innlegg.map((innlegg) => (
+                            <li key={innlegg.id} style={{ borderBottom: '1px solid #ccc', marginBottom: '1rem' }}>
+                                <strong>{innlegg.navn}</strong> ({innlegg.opprettet?.seconds ? new Date(innlegg.opprettet.seconds * 1000).toLocaleDateString() : 'Ukjent dato'}):<br />
+                                {innlegg.tekst}
+                            </li>
+                        ))
+                    )}
+                </ul>
+            )}
         </div>
     );
 }
