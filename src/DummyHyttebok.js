@@ -9,39 +9,18 @@ export default function DummyHyttebok() {
     const [tillatNokkel, setTillatNokkel] = useState('');
     const [harTilgang, setHarTilgang] = useState(false);
 
-useEffect(() => {
-    const hentNokkel = async () => {
-        const docRef = doc(db, 'config', 'hytte1');
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-            const lagretNokkel = docSnap.data().hytteKey;
-            setTillatNokkel(lagretNokkel);
-        } else {
-            console.warn('Ingen nøkkel lagret i Firestore');
-        }
-    };
-    hentNokkel();
+    useEffect(() => {
+        const hentNokkel = async () => {
+            const docRef = doc(db, 'config', 'hytte1');
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                setTillatNokkel(docSnap.data().hytteKey);
+            } else {
+                console.warn('Ingen nøkkel lagret i Firestore');
+            }
+        };
+        hentNokkel();
 
-    const q = query(collection(db, 'innlegg'), orderBy('opprettet', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setInnlegg(data);
-    });
-    return () => unsubscribe();
-}, []);
-useEffect(() => {
-    if (tillatNokkel) {
-        const params = new URLSearchParams(window.location.search);
-        const hytteKey = params.get('hytteKey');
-        if (hytteKey === tillatNokkel) {
-            setHarTilgang(true);
-        } else {
-            setHarTilgang(false);
-        }
-    }
-}, [tillatNokkel]);
-
-        // Lytt til innlegg
         const q = query(collection(db, 'innlegg'), orderBy('opprettet', 'desc'));
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -49,6 +28,19 @@ useEffect(() => {
         });
         return () => unsubscribe();
     }, []);
+
+    // Når nøkkelen er hentet, sjekk URL-parameter
+    useEffect(() => {
+        if (tillatNokkel) {
+            const params = new URLSearchParams(window.location.search);
+            const hytteKey = params.get('hytteKey');
+            if (hytteKey === tillatNokkel) {
+                setHarTilgang(true);
+            } else {
+                setHarTilgang(false);
+            }
+        }
+    }, [tillatNokkel]);
 
     const leggTilInnlegg = async () => {
         if (!nyttTekst.trim()) {
