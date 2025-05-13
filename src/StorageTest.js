@@ -4,7 +4,7 @@ import { initializeApp } from 'firebase/app';
 
 // Din faktiske firebaseConfig fra Project Settings → General → Your apps
 const firebaseConfig = {
-  apiKey: "DIN_API_KEY",
+  apiKey: "AIzaSyDQNEjM_6rQvKaeMbcIyd6hGmIynqcW7wQ",
   authDomain: "hyttebok-bca8a.firebaseapp.com",
   projectId: "hyttebok-bca8a",
   storageBucket: "hyttebok-bca8a.appspot.com",
