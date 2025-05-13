@@ -1,5 +1,6 @@
+import React from 'react';
 import StorageTest from './StorageTest';
 
-function App() {
+export default function App() {
   return <StorageTest />;
 }
