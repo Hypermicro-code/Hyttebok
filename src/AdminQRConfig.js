@@ -8,8 +8,9 @@ export default function AdminQRConfig({ t }) {
     const [bakgrunnsbilde, setBakgrunnsbilde] = useState('');
     const [bakgrunnsfarge, setBakgrunnsfarge] = useState('#ffffff');
     const [qrDataUrl, setQrDataUrl] = useState('');
-    const [netlifyUrl] = useState('https://hyttebok.netlify.app');
+    const [netlifyUrl] = useState('https://din-hyttebok.netlify.app');
     const [fullUrl, setFullUrl] = useState('');
+    const [visQRinnstillinger, setVisQRinnstillinger] = useState(false);
 
     useEffect(() => {
         const hentConfig = async () => {
@@ -20,18 +21,13 @@ export default function AdminQRConfig({ t }) {
                 setHytteKey(data.hytteKey || '');
                 setBakgrunnsbilde(data.bakgrunnsbilde || '');
                 setBakgrunnsfarge(data.bakgrunnsfarge || '#ffffff');
+                genererQR(data.hytteKey);
             }
         };
         hentConfig();
     }, []);
 
-    useEffect(() => {
-        if (hytteKey) {
-            genererQR(hytteKey);
-        }
-    }, [hytteKey]);
-
-    const lagreConfig = async () => {
+    const lagreNokkelOgQR = async () => {
         if (!hytteKey.trim()) {
             alert(t('hytteNokkel') + ' ' + t('melding'));
             return;
@@ -49,7 +45,21 @@ export default function AdminQRConfig({ t }) {
         }
     };
 
+    const lagreTema = async () => {
+        try {
+            await setDoc(doc(db, 'config', 'hytte1'), {
+                hytteKey,
+                bakgrunnsbilde,
+                bakgrunnsfarge
+            });
+            alert(t('lagreTema'));
+        } catch (error) {
+            alert('Feil ved lagring: ' + error.message);
+        }
+    };
+
     const genererQR = (key) => {
+        if (!key) return;
         const fullUrl = `${netlifyUrl}?hytteKey=${key}`;
         setFullUrl(fullUrl);
         const qr = new QRious({
@@ -71,9 +81,7 @@ export default function AdminQRConfig({ t }) {
         <div style={{ maxWidth: '600px', margin: 'auto', padding: '1rem' }}>
             <h1>{t('adminTittel')}</h1>
 
-            <p>{t('hytteNokkel')}</p>
-            <input type="text" value={hytteKey} onChange={(e) => setHytteKey(e.target.value)} style={{ width: '100%', marginBottom: '0.5rem' }} />
-
+            <h3>{t('temaInnstillinger')}</h3>
             <p>{t('bakgrunnsbilde')}</p>
             <input type="text" value={bakgrunnsbilde} onChange={(e) => setBakgrunnsbilde(e.target.value)} style={{ width: '100%', marginBottom: '0.5rem' }} placeholder="https://..." />
 
@@ -81,15 +89,30 @@ export default function AdminQRConfig({ t }) {
             <input type="color" value={bakgrunnsfarge} onChange={(e) => setBakgrunnsfarge(e.target.value)} style={{ marginBottom: '0.5rem' }} />
 
             <br />
-            <button onClick={lagreConfig}>{t('lagreNokkel')}</button>
+            <button onClick={lagreTema}>{t('lagreTema')}</button>
 
-            {qrDataUrl && (
-                <>
-                    <h3>{t('qrKode')}</h3>
-                    <img src={qrDataUrl} alt="QR-kode" style={{ border: '1px solid #ccc', padding: '10px' }} />
-                    <p>{t('fullUrl')}<br /><a href={fullUrl} target="_blank" rel="noopener noreferrer">{fullUrl}</a></p>
-                    <button onClick={kopierTilUtklippstavle}>{t('kopierQrLink')}</button>
-                </>
+            <hr />
+
+            <button onClick={() => setVisQRinnstillinger(!visQRinnstillinger)} style={{ marginTop: '1rem' }}>
+                {visQRinnstillinger ? t('skjulQrInnstillinger') : t('visQrInnstillinger')}
+            </button>
+
+            {visQRinnstillinger && (
+                <div style={{ marginTop: '1rem', padding: '1rem', border: '1px solid #ccc' }}>
+                    <p>{t('hytteNokkel')}</p>
+                    <input type="text" value={hytteKey} onChange={(e) => setHytteKey(e.target.value)} style={{ width: '100%', marginBottom: '0.5rem' }} />
+
+                    <button onClick={lagreNokkelOgQR}>{t('lagreNokkel')}</button>
+
+                    {qrDataUrl && (
+                        <>
+                            <h3>{t('qrKode')}</h3>
+                            <img src={qrDataUrl} alt="QR-kode" style={{ border: '1px solid #ccc', padding: '10px' }} />
+                            <p>{t('fullUrl')}<br /><a href={fullUrl} target="_blank" rel="noopener noreferrer">{fullUrl}</a></p>
+                            <button onClick={kopierTilUtklippstavle}>{t('kopierQrLink')}</button>
+                        </>
+                    )}
+                </div>
             )}
         </div>
     );
