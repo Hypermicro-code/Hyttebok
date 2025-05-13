@@ -90,26 +90,29 @@ export default function AdminQRConfig({ t }) {
             setOpplastingStatus(t('klarTilOpplasting'));
         }
     };
+const handleImageUpload = async () => {
+    if (!valgtFil) {
+        alert(t('velgFilFørOpplasting'));
+        return;
+    }
 
-    const handleImageUpload = async () => {
-        if (!valgtFil) {
-            alert(t('velgFilFørOpplasting'));
-            return;
-        }
-
-        const storageRef = ref(storage, `bakgrunnsbilder/${valgtFil.name}`);
-        try {
-            setOpplastingStatus(t('lasterOpp'));
-            const snapshot = await uploadBytes(storageRef, valgtFil);
-            const url = await getDownloadURL(snapshot.ref);
-            setBakgrunnsbilde(url);
-            setMelding(t('huskLagreTema'));
-            setOpplastingStatus(t('opplastingFerdig'));
-        } catch (error) {
-            console.error('Feil ved opplasting:', error);
-            setOpplastingStatus(t('feilOpplasting') + ': ' + error.message);
-        }
-    };
+    const storageRef = ref(storage, `bakgrunnsbilder/${valgtFil.name}`);
+    try {
+        setOpplastingStatus(t('lasterOpp'));
+        console.log('Starter opplasting av fil:', valgtFil.name);
+        const snapshot = await uploadBytes(storageRef, valgtFil);
+        console.log('Opplasting ferdig:', snapshot);
+        const url = await getDownloadURL(snapshot.ref);
+        console.log('Download URL hentet:', url);
+        setBakgrunnsbilde(url);
+        setMelding(t('huskLagreTema'));
+        setOpplastingStatus(t('opplastingFerdig'));
+    } catch (error) {
+        console.error('Feil ved opplasting:', error);
+        alert('Feil ved opplasting: ' + error.message);
+        setOpplastingStatus(t('feilOpplasting') + ': ' + error.message);
+    }
+};
 
     const handleFargeEndring = (farge) => {
         setBakgrunnsfarge(farge);
