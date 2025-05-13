@@ -5,19 +5,24 @@ import { db } from './firebase';
 
 export default function AdminQRConfig({ t }) {
     const [hytteKey, setHytteKey] = useState('');
+    const [bakgrunnsbilde, setBakgrunnsbilde] = useState('');
+    const [bakgrunnsfarge, setBakgrunnsfarge] = useState('#ffffff');
     const [qrDataUrl, setQrDataUrl] = useState('');
     const [netlifyUrl] = useState('https://din-hyttebok.netlify.app');
     const [fullUrl, setFullUrl] = useState('');
 
     useEffect(() => {
-        const hentNokkel = async () => {
+        const hentConfig = async () => {
             const docRef = doc(db, 'config', 'hytte1');
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
-                setHytteKey(docSnap.data().hytteKey);
+                const data = docSnap.data();
+                setHytteKey(data.hytteKey || '');
+                setBakgrunnsbilde(data.bakgrunnsbilde || '');
+                setBakgrunnsfarge(data.bakgrunnsfarge || '#ffffff');
             }
         };
-        hentNokkel();
+        hentConfig();
     }, []);
 
     useEffect(() => {
@@ -26,13 +31,17 @@ export default function AdminQRConfig({ t }) {
         }
     }, [hytteKey]);
 
-    const lagreNokkel = async () => {
+    const lagreConfig = async () => {
         if (!hytteKey.trim()) {
             alert(t('hytteNokkel') + ' ' + t('melding'));
             return;
         }
         try {
-            await setDoc(doc(db, 'config', 'hytte1'), { hytteKey });
+            await setDoc(doc(db, 'config', 'hytte1'), {
+                hytteKey,
+                bakgrunnsbilde,
+                bakgrunnsfarge
+            });
             alert(t('lagreNokkel'));
             genererQR(hytteKey);
         } catch (error) {
@@ -63,14 +72,16 @@ export default function AdminQRConfig({ t }) {
             <h1>{t('adminTittel')}</h1>
 
             <p>{t('hytteNokkel')}</p>
-            <input
-                type="text"
-                value={hytteKey}
-                onChange={(e) => setHytteKey(e.target.value)}
-                style={{ width: '100%', marginBottom: '0.5rem' }}
-            />
+            <input type="text" value={hytteKey} onChange={(e) => setHytteKey(e.target.value)} style={{ width: '100%', marginBottom: '0.5rem' }} />
 
-            <button onClick={lagreNokkel}>{t('lagreNokkel')}</button>
+            <p>{t('bakgrunnsbilde')}</p>
+            <input type="text" value={bakgrunnsbilde} onChange={(e) => setBakgrunnsbilde(e.target.value)} style={{ width: '100%', marginBottom: '0.5rem' }} placeholder="https://..." />
+
+            <p>{t('bakgrunnsfarge')}</p>
+            <input type="color" value={bakgrunnsfarge} onChange={(e) => setBakgrunnsfarge(e.target.value)} style={{ marginBottom: '0.5rem' }} />
+
+            <br />
+            <button onClick={lagreConfig}>{t('lagreNokkel')}</button>
 
             {qrDataUrl && (
                 <>
