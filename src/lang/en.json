@@ -17,5 +17,8 @@
     "temaInnstillinger": "Theme settings",
 "lagreTema": "Save theme",
 "visQrInnstillinger": "QR settings",
-"skjulQrInnstillinger": "Hide QR settings"
+"skjulQrInnstillinger": "Hide QR settings",
+    "forhandsvisning": "Preview:",
+"forhandsvisningTekst": "This is how the cabin book will look with the selected theme.",
+"huskLagreTema": "Change made - remember to click 'Save theme' to store the change."
 }
