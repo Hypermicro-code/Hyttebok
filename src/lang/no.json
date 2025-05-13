@@ -1,0 +1,11 @@
+{
+    "velkommen": "Velkommen til Hytteboka",
+    "skrivInnlegg": "Skriv et nytt innlegg:",
+    "navn": "Navn (valgfritt)",
+    "melding": "Skriv noe hyggelig...",
+    "leggTil": "Legg til innlegg",
+    "tidligereInnlegg": "Tidligere innlegg:",
+    "ingenInnlegg": "Ingen innlegg enda. Vær den første!",
+    "ikkeTilgang": "Du har ikke tilgang til å legge inn innlegg.\nSkann gyldig QR-kode på hytta.",
+    "laster": "Laster tilgangssjekk..."
+}
