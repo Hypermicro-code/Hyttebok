@@ -1,7 +1,7 @@
 import React from 'react';
 import DummyHyttebok from './DummyHyttebok';
-import { t as t_no } from './lang/no'; // Sett språk her (bruk 'en' for engelsk)
-import { t as t_en } from './lang/en';
+import t_no from './lang/no'; // OBS: default export
+import t_en from './lang/en';
 
 const valgtSpråk = 'no'; // Sett til 'en' for engelsk
 
