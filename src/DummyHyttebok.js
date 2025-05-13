@@ -8,15 +8,24 @@ export default function DummyHyttebok() {
     const [nyttTekst, setNyttTekst] = useState('');
     const [tillatNokkel, setTillatNokkel] = useState('');
     const [harTilgang, setHarTilgang] = useState(false);
+    const [nokkellastet, setNokkellastet] = useState(false);
 
+    // Hent nøkkel fra Firestore
     useEffect(() => {
         const hentNokkel = async () => {
-            const docRef = doc(db, 'config', 'hytte1');
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                setTillatNokkel(docSnap.data().hytteKey);
-            } else {
-                console.warn('Ingen nøkkel lagret i Firestore');
+            try {
+                const docRef = doc(db, 'config', 'hytte1');
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const lagretNokkel = docSnap.data().hytteKey;
+                    setTillatNokkel(lagretNokkel);
+                } else {
+                    console.warn('Ingen nøkkel lagret i Firestore');
+                }
+            } catch (error) {
+                console.error('Feil ved henting av nøkkel:', error);
+            } finally {
+                setNokkellastet(true);
             }
         };
         hentNokkel();
@@ -52,6 +61,7 @@ export default function DummyHyttebok() {
                 navn: nyttNavn || 'Gjest',
                 tekst: nyttTekst,
                 opprettet: serverTimestamp(),
+                hytteKey: tillatNokkel
             });
             setNyttNavn('');
             setNyttTekst('');
@@ -64,7 +74,9 @@ export default function DummyHyttebok() {
         <div style={{ maxWidth: '600px', margin: 'auto', padding: '1rem' }}>
             <h1>Velkommen til Hytteboka</h1>
 
-            {harTilgang ? (
+            {!nokkellastet ? (
+                <p>Laster tilgangssjekk...</p>
+            ) : harTilgang ? (
                 <>
                     <h3>Skriv et nytt innlegg:</h3>
                     <input
