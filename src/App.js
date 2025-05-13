@@ -1,5 +1,12 @@
-import AdminQRConfig from './AdminQRConfig';
+import React from 'react';
+import DummyHyttebok from './DummyHyttebok';
+import { t as t_no } from './lang/no'; // Sett språk her (bruk 'en' for engelsk)
+import { t as t_en } from './lang/en';
+
+const valgtSpråk = 'no'; // Sett til 'en' for engelsk
+
+const t = valgtSpråk === 'no' ? t_no : t_en;
 
 export default function App() {
-  return <AdminQRConfig t={(key) => key} />;
+  return <DummyHyttebok t={(key) => t[key] || key} />;
 }
