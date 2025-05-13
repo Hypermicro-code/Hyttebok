@@ -7,5 +7,11 @@
     "tidligereInnlegg": "Previous entries:",
     "ingenInnlegg": "No entries yet. Be the first!",
     "ikkeTilgang": "You do not have access to write entries.\nScan the valid QR code at the cabin.",
-    "laster": "Checking access..."
+    "laster": "Checking access...",
+    "adminTittel": "QR Code Generator for your Cabin Book",
+    "hytteNokkel": "Cabin key (secret code):",
+    "lagreNokkel": "Save key and generate QR",
+    "qrKode": "QR Code (to be scanned by guests):",
+    "fullUrl": "Full URL:",
+    "kopierQrLink": "Copy QR link"
 }
