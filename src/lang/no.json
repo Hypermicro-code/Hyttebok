@@ -17,5 +17,8 @@
     "temaInnstillinger": "Tema-innstillinger",
 "lagreTema": "Lagre tema",
 "visQrInnstillinger": "QR-innstillinger",
-"skjulQrInnstillinger": "Skjul QR-innstillinger"
+"skjulQrInnstillinger": "Skjul QR-innstillinger",
+    "forhandsvisning": "Forhåndsvisning:",
+"forhandsvisningTekst": "Dette er hvordan hytteboka vil se ut med valgt tema.",
+"huskLagreTema": "Endring gjort - husk å trykke 'Lagre tema' for å lagre endringen."
 }
