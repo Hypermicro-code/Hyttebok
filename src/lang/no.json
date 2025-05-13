@@ -14,4 +14,8 @@
     "qrKode": "QR-kode (scannes av gjester):",
     "fullUrl": "Full URL:",
     "kopierQrLink": "Kopier QR-link"
+    "temaInnstillinger": "Tema-innstillinger",
+"lagreTema": "Lagre tema",
+"visQrInnstillinger": "QR-innstillinger",
+"skjulQrInnstillinger": "Skjul QR-innstillinger"
 }
