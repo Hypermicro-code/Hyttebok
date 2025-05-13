@@ -1,0 +1,11 @@
+{
+    "velkommen": "Welcome to the Cabin Book",
+    "skrivInnlegg": "Write a new entry:",
+    "navn": "Name (optional)",
+    "melding": "Write something nice...",
+    "leggTil": "Add entry",
+    "tidligereInnlegg": "Previous entries:",
+    "ingenInnlegg": "No entries yet. Be the first!",
+    "ikkeTilgang": "You do not have access to write entries.\nScan the valid QR code at the cabin.",
+    "laster": "Checking access..."
+}
