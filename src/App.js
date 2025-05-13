@@ -1,11 +1,12 @@
 import React from 'react';
 import DummyHyttebok from './DummyHyttebok';
-import t_no from './lang/no'; // OBS: default export
-import t_en from './lang/en';
+import no from './lang/no';
+import en from './lang/en';
 
-const valgtSpråk = 'no'; // Sett til 'en' for engelsk
+// Sett ønsket språk her:
+const valgtSpråk = 'no'; // eller 'en'
 
-const t = valgtSpråk === 'no' ? t_no : t_en;
+const t = valgtSpråk === 'no' ? no : en;
 
 export default function App() {
   return <DummyHyttebok t={(key) => t[key] || key} />;
