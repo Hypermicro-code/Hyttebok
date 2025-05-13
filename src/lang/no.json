@@ -1,4 +1,4 @@
-{
+const t = {
   "velkommen": "Velkommen til Hytteboka",
   "skrivInnlegg": "Skriv et nytt innlegg:",
   "navn": "Navn (valgfritt)",
@@ -30,4 +30,6 @@
   "feilOpplasting": "Feil ved opplasting",
   "valgtFil": "Valgt fil",
   "lastOppBilde": "Last opp bilde"
-}
+};
+
+export default t;
