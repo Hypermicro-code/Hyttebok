@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
-export default function DummyHyttebok() {
+export default function DummyHyttebok({ t }) {
     const [innlegg, setInnlegg] = useState([]);
     const [nyttNavn, setNyttNavn] = useState('');
     const [nyttTekst, setNyttTekst] = useState('');
@@ -10,7 +10,6 @@ export default function DummyHyttebok() {
     const [harTilgang, setHarTilgang] = useState(false);
     const [nokkellastet, setNokkellastet] = useState(false);
 
-    // Hent nøkkel fra Firestore
     useEffect(() => {
         const hentNokkel = async () => {
             try {
@@ -38,7 +37,6 @@ export default function DummyHyttebok() {
         return () => unsubscribe();
     }, []);
 
-    // Når nøkkelen er hentet, sjekk URL-parameter
     useEffect(() => {
         if (tillatNokkel) {
             const params = new URLSearchParams(window.location.search);
@@ -53,7 +51,7 @@ export default function DummyHyttebok() {
 
     const leggTilInnlegg = async () => {
         if (!nyttTekst.trim()) {
-            alert('Skriv inn en melding!');
+            alert(t('melding'));
             return;
         }
         try {
@@ -72,35 +70,35 @@ export default function DummyHyttebok() {
 
     return (
         <div style={{ maxWidth: '600px', margin: 'auto', padding: '1rem' }}>
-            <h1>Velkommen til Hytteboka</h1>
+            <h1>{t('velkommen')}</h1>
 
             {!nokkellastet ? (
-                <p>Laster tilgangssjekk...</p>
+                <p>{t('laster')}</p>
             ) : harTilgang ? (
                 <>
-                    <h3>Skriv et nytt innlegg:</h3>
+                    <h3>{t('skrivInnlegg')}</h3>
                     <input
                         type="text"
-                        placeholder="Navn (valgfritt)"
+                        placeholder={t('navn')}
                         value={nyttNavn}
                         onChange={(e) => setNyttNavn(e.target.value)}
                         style={{ width: '100%', marginBottom: '0.5rem' }}
                     />
                     <textarea
-                        placeholder="Skriv noe hyggelig..."
+                        placeholder={t('melding')}
                         value={nyttTekst}
                         onChange={(e) => setNyttTekst(e.target.value)}
                         style={{ width: '100%', height: '100px' }}
                     ></textarea>
-                    <button onClick={leggTilInnlegg} style={{ marginTop: '0.5rem' }}>Legg til innlegg</button>
+                    <button onClick={leggTilInnlegg} style={{ marginTop: '0.5rem' }}>{t('leggTil')}</button>
                 </>
             ) : (
-                <p><strong>Du har ikke tilgang til å legge inn innlegg.<br />Skann gyldig QR-kode på hytta.</strong></p>
+                <p><strong>{t('ikkeTilgang')}</strong></p>
             )}
 
-            <h3>Tidligere innlegg:</h3>
+            <h3>{t('tidligereInnlegg')}</h3>
             {innlegg.length === 0 ? (
-                <p>Ingen innlegg enda. Vær den første!</p>
+                <p>{t('ingenInnlegg')}</p>
             ) : (
                 <ul>
                     {innlegg.map((innlegg) => (
