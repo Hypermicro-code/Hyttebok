@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, doc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, doc } from 'firebase/firestore';
 import { db } from './firebase';
 
 export default function DummyHyttebok({ t }) {
@@ -13,43 +13,38 @@ export default function DummyHyttebok({ t }) {
     const [bakgrunnsfarge, setBakgrunnsfarge] = useState('#ffffff');
 
     useEffect(() => {
-        const hentConfig = async () => {
-            try {
-                const docRef = doc(db, 'config', 'hytte1');
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    setTillatNokkel(data.hytteKey);
-                    setBakgrunnsbilde(data.bakgrunnsbilde || '');
-                    setBakgrunnsfarge(data.bakgrunnsfarge || '#ffffff');
-                } else {
-                    console.warn('Ingen config funnet');
-                }
-            } catch (error) {
-                console.error('Feil ved henting av config:', error);
-            } finally {
-                setNokkellastet(true);
+        // Lytt på config live (auto-refresh)
+        const unsubConfig = onSnapshot(doc(db, 'config', 'hytte1'), (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                setTillatNokkel(data.hytteKey || '');
+                setBakgrunnsbilde(data.bakgrunnsbilde || '');
+                setBakgrunnsfarge(data.bakgrunnsfarge || '#ffffff');
             }
-        };
-        hentConfig();
+            setNokkellastet(true);
+        }, (error) => {
+            console.error('Feil ved henting av config:', error);
+            setNokkellastet(true);
+        });
 
+        // Lytt på innlegg
         const q = query(collection(db, 'innlegg'), orderBy('opprettet', 'desc'));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
+        const unsubInnlegg = onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setInnlegg(data);
         });
-        return () => unsubscribe();
+
+        return () => {
+            unsubConfig();
+            unsubInnlegg();
+        };
     }, []);
 
     useEffect(() => {
         if (tillatNokkel) {
             const params = new URLSearchParams(window.location.search);
             const hytteKey = params.get('hytteKey');
-            if (hytteKey === tillatNokkel) {
-                setHarTilgang(true);
-            } else {
-                setHarTilgang(false);
-            }
+            setHarTilgang(hytteKey === tillatNokkel);
         }
     }, [tillatNokkel]);
 
