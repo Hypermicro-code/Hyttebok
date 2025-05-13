@@ -8,7 +8,7 @@ export default function AdminQRConfig({ t }) {
     const [bakgrunnsbilde, setBakgrunnsbilde] = useState('');
     const [bakgrunnsfarge, setBakgrunnsfarge] = useState('#ffffff');
     const [qrDataUrl, setQrDataUrl] = useState('');
-    const [netlifyUrl] = useState('https://din-hyttebok.netlify.app');
+    const [netlifyUrl] = useState('https://hyttebok.netlify.app');
     const [fullUrl, setFullUrl] = useState('');
 
     useEffect(() => {
