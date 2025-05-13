@@ -1,4 +1,4 @@
-{
+const t = {
   "velkommen": "Welcome to the Cabin Book",
   "skrivInnlegg": "Write a new entry:",
   "navn": "Name (optional)",
@@ -30,4 +30,6 @@
   "feilOpplasting": "Error uploading image",
   "valgtFil": "Selected file",
   "lastOppBilde": "Upload image"
-}
+};
+
+export default t;
