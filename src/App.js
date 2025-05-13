@@ -1,6 +1,5 @@
-import React from 'react';
-import DummyHyttebok from './DummyHyttebok';
+import AdminQRConfig from './AdminQRConfig';
 
 export default function App() {
-  return <DummyHyttebok />;
+  return <AdminQRConfig t={(key) => key} />;
 }
