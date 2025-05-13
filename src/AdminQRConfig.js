@@ -14,6 +14,9 @@ export default function AdminQRConfig({ t }) {
     const [visQRinnstillinger, setVisQRinnstillinger] = useState(false);
     const [melding, setMelding] = useState('');
 
+    const [valgtFil, setValgtFil] = useState(null);
+    const [opplastingStatus, setOpplastingStatus] = useState('');
+
     useEffect(() => {
         const hentConfig = async () => {
             const docRef = doc(db, 'config', 'hytte1');
@@ -80,18 +83,31 @@ export default function AdminQRConfig({ t }) {
         });
     };
 
-    const handleImageUpload = async (e) => {
+    const handleImageSelect = (e) => {
         const file = e.target.files[0];
-        if (!file) return;
+        if (file) {
+            setValgtFil(file);
+            setOpplastingStatus(t('klarTilOpplasting'));
+        }
+    };
 
-        const storageRef = ref(storage, `bakgrunnsbilder/${file.name}`);
+    const handleImageUpload = async () => {
+        if (!valgtFil) {
+            alert(t('velgFilFørOpplasting'));
+            return;
+        }
+
+        const storageRef = ref(storage, `bakgrunnsbilder/${valgtFil.name}`);
         try {
-            await uploadBytes(storageRef, file);
-            const url = await getDownloadURL(storageRef);
+            setOpplastingStatus(t('lasterOpp'));
+            const snapshot = await uploadBytes(storageRef, valgtFil);
+            const url = await getDownloadURL(snapshot.ref);
             setBakgrunnsbilde(url);
             setMelding(t('huskLagreTema'));
+            setOpplastingStatus(t('opplastingFerdig'));
         } catch (error) {
-            alert('Feil ved opplasting av bilde: ' + error.message);
+            console.error('Feil ved opplasting:', error);
+            setOpplastingStatus(t('feilOpplasting') + ': ' + error.message);
         }
     };
 
@@ -123,7 +139,16 @@ export default function AdminQRConfig({ t }) {
 
             <p>{t('bakgrunnsbilde')}</p>
             <input type="text" value={bakgrunnsbilde} onChange={(e) => { setBakgrunnsbilde(e.target.value); setMelding(t('huskLagreTema')); }} style={{ width: '100%', marginBottom: '0.5rem' }} placeholder="https://..." />
-            <input type="file" accept="image/*" onChange={handleImageUpload} style={{ marginBottom: '0.5rem' }} />
+            <input type="file" accept="image/*" onChange={handleImageSelect} style={{ marginBottom: '0.5rem' }} />
+
+            {valgtFil && (
+                <>
+                    <p><strong>{t('valgtFil')}:</strong> {valgtFil.name}</p>
+                    <img src={URL.createObjectURL(valgtFil)} alt="Preview" style={{ maxWidth: '100%', marginBottom: '0.5rem', border: '1px solid #ccc' }} />
+                    <button onClick={handleImageUpload}>{t('lastOppBilde')}</button>
+                    <p>{opplastingStatus}</p>
+                </>
+            )}
 
             <p>{t('bakgrunnsfarge')}</p>
             <input type="color" value={bakgrunnsfarge} onChange={(e) => handleFargeEndring(e.target.value)} style={{ marginBottom: '0.5rem' }} />
