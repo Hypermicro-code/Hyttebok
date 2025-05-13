@@ -7,5 +7,11 @@
     "tidligereInnlegg": "Tidligere innlegg:",
     "ingenInnlegg": "Ingen innlegg enda. Vær den første!",
     "ikkeTilgang": "Du har ikke tilgang til å legge inn innlegg.\nSkann gyldig QR-kode på hytta.",
-    "laster": "Laster tilgangssjekk..."
+    "laster": "Laster tilgangssjekk...",
+    "adminTittel": "QR-kode Generator for din Hyttebok",
+    "hytteNokkel": "Hytte-nøkkel (hemmelig kode):",
+    "lagreNokkel": "Lagre nøkkel og generer QR",
+    "qrKode": "QR-kode (scannes av gjester):",
+    "fullUrl": "Full URL:",
+    "kopierQrLink": "Kopier QR-link"
 }
