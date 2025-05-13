@@ -3,10 +3,10 @@ import QRious from 'qrious';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
-export default function AdminQRConfig() {
+export default function AdminQRConfig({ t }) {
     const [hytteKey, setHytteKey] = useState('');
     const [qrDataUrl, setQrDataUrl] = useState('');
-    const [netlifyUrl] = useState('https://hyttebok.netlify.app'); // Sett din Netlify-URL her
+    const [netlifyUrl] = useState('https://hyttebok.netlify.app');
     const [fullUrl, setFullUrl] = useState('');
 
     useEffect(() => {
