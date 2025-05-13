@@ -14,4 +14,8 @@
     "qrKode": "QR Code (to be scanned by guests):",
     "fullUrl": "Full URL:",
     "kopierQrLink": "Copy QR link"
+    "temaInnstillinger": "Theme settings",
+"lagreTema": "Save theme",
+"visQrInnstillinger": "QR settings",
+"skjulQrInnstillinger": "Hide QR settings"
 }
