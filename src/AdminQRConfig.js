@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import QRious from 'qrious';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, storage } from './firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 export default function AdminQRConfig({ t }) {
     const [hytteKey, setHytteKey] = useState('');
     const [bakgrunnsbilde, setBakgrunnsbilde] = useState('');
     const [bakgrunnsfarge, setBakgrunnsfarge] = useState('#ffffff');
     const [qrDataUrl, setQrDataUrl] = useState('');
-    const [netlifyUrl] = useState('https://din-hyttebok.netlify.app');
+    const [netlifyUrl] = useState('https://hyttebok.netlify.app');
     const [fullUrl, setFullUrl] = useState('');
     const [visQRinnstillinger, setVisQRinnstillinger] = useState(false);
 
@@ -77,6 +78,22 @@ export default function AdminQRConfig({ t }) {
         });
     };
 
+    // Ny funksjon: opplasting av bilde til Firebase Storage
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const storageRef = ref(storage, `bakgrunnsbilder/${file.name}`);
+        try {
+            await uploadBytes(storageRef, file);
+            const url = await getDownloadURL(storageRef);
+            setBakgrunnsbilde(url);
+            alert('Bilde lastet opp og lagret lokalt. Husk å trykke "Lagre tema"!');
+        } catch (error) {
+            alert('Feil ved opplasting av bilde: ' + error.message);
+        }
+    };
+
     return (
         <div style={{ maxWidth: '600px', margin: 'auto', padding: '1rem' }}>
             <h1>{t('adminTittel')}</h1>
@@ -84,6 +101,7 @@ export default function AdminQRConfig({ t }) {
             <h3>{t('temaInnstillinger')}</h3>
             <p>{t('bakgrunnsbilde')}</p>
             <input type="text" value={bakgrunnsbilde} onChange={(e) => setBakgrunnsbilde(e.target.value)} style={{ width: '100%', marginBottom: '0.5rem' }} placeholder="https://..." />
+            <input type="file" accept="image/*" onChange={handleImageUpload} style={{ marginBottom: '0.5rem' }} />
 
             <p>{t('bakgrunnsfarge')}</p>
             <input type="color" value={bakgrunnsfarge} onChange={(e) => setBakgrunnsfarge(e.target.value)} style={{ marginBottom: '0.5rem' }} />
