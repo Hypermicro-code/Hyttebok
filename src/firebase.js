@@ -3,10 +3,10 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-    apiKey: "DIN_API_KEY",
-    authDomain: "DITT_PROSJEKT.firebaseapp.com",
-    projectId: "DITT_PROSJEKT",
-    storageBucket: "DITT_PROSJEKT.appspot.com",
+    apiKey: "AIzaSyDQNEjM_6rQvKaeMbcIyd6hGmIynqcW7wQ",
+    authDomain: "hyttebok-bca8a.firebaseapp.com",
+    projectId: "hyttebok-bca8a",
+    storageBucket: "hyttebok-bca8a.appspot.com",
     messagingSenderId: "XXXXXX",
     appId: "XXXXXX"
 };
