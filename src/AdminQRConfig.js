@@ -6,10 +6,10 @@ import { db } from './firebase';
 export default function AdminQRConfig() {
     const [hytteKey, setHytteKey] = useState('');
     const [qrDataUrl, setQrDataUrl] = useState('');
-    const [netlifyUrl] = useState('https://hyttebok.netlify.app'); // Sett din Netlify-URL her
+    const [netlifyUrl] = useState('https://din-hyttebok.netlify.app'); // Sett din Netlify-URL her
+    const [fullUrl, setFullUrl] = useState('');
 
     useEffect(() => {
-        // Hent nøkkel fra Firestore ved oppstart
         const hentNokkel = async () => {
             const docRef = doc(db, 'config', 'hytte1');
             const docSnap = await getDoc(docRef);
@@ -42,11 +42,20 @@ export default function AdminQRConfig() {
 
     const genererQR = (key) => {
         const fullUrl = `${netlifyUrl}?hytteKey=${key}`;
+        setFullUrl(fullUrl);
         const qr = new QRious({
             value: fullUrl,
             size: 300
         });
         setQrDataUrl(qr.toDataURL());
+    };
+
+    const kopierTilUtklippstavle = () => {
+        navigator.clipboard.writeText(fullUrl).then(() => {
+            alert('QR-link kopiert til utklippstavle!');
+        }, () => {
+            alert('Kunne ikke kopiere. Prøv manuelt.');
+        });
     };
 
     return (
@@ -67,7 +76,8 @@ export default function AdminQRConfig() {
                 <>
                     <h3>QR-kode (scannes av gjester):</h3>
                     <img src={qrDataUrl} alt="QR-kode" style={{ border: '1px solid #ccc', padding: '10px' }} />
-                    <p>Full URL:<br /><a href={`${netlifyUrl}?hytteKey=${hytteKey}`} target="_blank" rel="noopener noreferrer">{`${netlifyUrl}?hytteKey=${hytteKey}`}</a></p>
+                    <p>Full URL:<br /><a href={fullUrl} target="_blank" rel="noopener noreferrer">{fullUrl}</a></p>
+                    <button onClick={kopierTilUtklippstavle}>Kopier QR-link</button>
                 </>
             )}
         </div>
