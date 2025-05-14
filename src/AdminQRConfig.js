@@ -8,6 +8,11 @@ export default function AdminQRConfig({ t, tilbake }) {
     const [hytteKey, setHytteKey] = useState('');
     const [bakgrunnsbilde, setBakgrunnsbilde] = useState('');
     const [bakgrunnsfarge, setBakgrunnsfarge] = useState('#ffffff');
+    const [headerTekst, setHeaderTekst] = useState('Velkommen til Hytteboka');
+    const [headerBilde, setHeaderBilde] = useState('');
+    const [headerOpacity, setHeaderOpacity] = useState(1);
+    const [headerMode, setHeaderMode] = useState('cover');
+
     const [qrDataUrl, setQrDataUrl] = useState('');
     const [netlifyUrl] = useState('https://hyttebok.netlify.app');
     const [fullUrl, setFullUrl] = useState('');
@@ -24,35 +29,47 @@ export default function AdminQRConfig({ t, tilbake }) {
                 setHytteKey(data.hytteKey || '');
                 setBakgrunnsbilde(data.bakgrunnsbilde || '');
                 setBakgrunnsfarge(data.bakgrunnsfarge || '#ffffff');
+                setHeaderTekst(data.headerTekst || 'Velkommen til Hytteboka');
+                setHeaderBilde(data.headerBilde || '');
+                setHeaderOpacity(data.headerOpacity !== undefined ? data.headerOpacity : 1);
+                setHeaderMode(data.headerMode || 'cover');
                 genererQR(data.hytteKey);
             }
         };
         hentConfig();
     }, []);
 
-    const lagreNokkelOgQR = async () => {
+    const lagreTemaOgHeader = async () => {
         try {
             await setDoc(doc(db, 'config', 'hytte1'), {
                 hytteKey,
                 bakgrunnsbilde,
-                bakgrunnsfarge
+                bakgrunnsfarge,
+                headerTekst,
+                headerBilde,
+                headerOpacity,
+                headerMode
             });
-            alert(t('lagreNokkel'));
-            genererQR(hytteKey);
+            alert('Tema og header lagret.');
+            setMelding('');
         } catch (error) {
             alert('Feil ved lagring: ' + error.message);
         }
     };
 
-    const lagreTema = async () => {
+    const lagreNokkelOgQR = async () => {
         try {
             await setDoc(doc(db, 'config', 'hytte1'), {
                 hytteKey,
                 bakgrunnsbilde,
-                bakgrunnsfarge
+                bakgrunnsfarge,
+                headerTekst,
+                headerBilde,
+                headerOpacity,
+                headerMode
             });
-            alert(t('lagreTema'));
-            setMelding('');
+            alert('Nøkkel og QR lagret.');
+            genererQR(hytteKey);
         } catch (error) {
             alert('Feil ved lagring: ' + error.message);
         }
@@ -73,34 +90,33 @@ export default function AdminQRConfig({ t, tilbake }) {
         const file = e.target.files[0];
         if (file) {
             setValgtFil(file);
-            setOpplastingStatus(t('klarTilOpplasting'));
+            setOpplastingStatus('Fil valgt - klar til opplasting');
         }
     };
 
-    const handleImageUpload = async () => {
+    const handleImageUpload = async (type) => {
         if (!valgtFil) {
-            alert(t('velgFilFørOpplasting'));
+            alert('Velg en fil først.');
             return;
         }
 
-        const storageRef = ref(storage, `bakgrunnsbilder/${valgtFil.name}`);
+        const storageRef = ref(storage, `${type === 'header' ? 'headerbilder' : 'bakgrunnsbilder'}/${valgtFil.name}`);
         try {
-            setOpplastingStatus(t('lasterOpp'));
+            setOpplastingStatus('Laster opp...');
             const snapshot = await uploadBytes(storageRef, valgtFil);
             const url = await getDownloadURL(snapshot.ref);
-            setBakgrunnsbilde(url);
-            setMelding(t('huskLagreTema'));
-            setOpplastingStatus(t('opplastingFerdig'));
+            if (type === 'header') {
+                setHeaderBilde(url);
+            } else {
+                setBakgrunnsbilde(url);
+            }
+            setMelding('Husk å lagre tema');
+            setOpplastingStatus('Opplasting ferdig');
         } catch (error) {
             console.error('Feil ved opplasting:', error);
             alert('Feil ved opplasting: ' + error.message);
-            setOpplastingStatus(t('feilOpplasting') + ': ' + error.message);
+            setOpplastingStatus('Feil ved opplasting: ' + error.message);
         }
-    };
-
-    const handleFargeEndring = (farge) => {
-        setBakgrunnsfarge(farge);
-        setMelding(t('huskLagreTema'));
     };
 
     return (
@@ -108,50 +124,49 @@ export default function AdminQRConfig({ t, tilbake }) {
             <button onClick={tilbake}>Tilbake til Hyttebok</button>
             <h1>Administrer din Hyttebok</h1>
 
-            <h3>Tema-innstillinger</h3>
-            <div style={{
-                backgroundColor: bakgrunnsfarge,
-                backgroundImage: bakgrunnsbilde ? `url(${bakgrunnsbilde})` : 'none',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                padding: '1rem',
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                marginBottom: '1rem'
-            }}>
-                <p><strong>Forhåndsvisning:</strong></p>
-                <div style={{ background: 'rgba(255,255,255,0.8)', padding: '0.5rem', borderRadius: '4px' }}>
-                    Dette er hvordan hytteboka vil se ut med valgt tema.
-                </div>
-            </div>
+            <h3>Tema og header-innstillinger</h3>
+            <p>Headertekst:</p>
+            <input type="text" value={headerTekst} onChange={(e) => { setHeaderTekst(e.target.value); setMelding('Husk å lagre tema'); }}
+                style={{ width: '100%', maxWidth: '500px', margin: '0 auto', marginBottom: '0.5rem', display: 'block' }} />
 
-            <p>Bakgrunnsbilde (URL):</p>
-            <input type="text" value={bakgrunnsbilde} onChange={(e) => { setBakgrunnsbilde(e.target.value); setMelding('Husk å lagre tema'); }} style={{ width: '100%', marginBottom: '0.5rem' }} placeholder="https://..." />
+            <p>Last opp headerbilde:</p>
             <input type="file" accept="image/*" onChange={handleImageSelect} style={{ marginBottom: '0.5rem' }} />
+            <button onClick={() => handleImageUpload('header')} style={{ marginBottom: '0.5rem' }}>Last opp headerbilde</button>
 
-            {valgtFil && (
-                <>
-                    <p><strong>Valgt fil:</strong> {valgtFil.name}</p>
-                    <img src={URL.createObjectURL(valgtFil)} alt="Preview" style={{ maxWidth: '100%', marginBottom: '0.5rem', border: '1px solid #ccc' }} />
-                    <button onClick={handleImageUpload}>Last opp bilde</button>
-                    <p>{opplastingStatus}</p>
-                </>
-            )}
+            {headerBilde && <img src={headerBilde} alt="Header Preview" style={{ width: '100%', marginBottom: '1rem', border: '1px solid #ccc' }} />}
+
+            <p>Gjennomsiktighet (0=helt gjennomsiktig, 1=helt synlig): {headerOpacity}</p>
+            <input type="range" min="0" max="1" step="0.01" value={headerOpacity} onChange={(e) => { setHeaderOpacity(parseFloat(e.target.value)); setMelding('Husk å lagre tema'); }} style={{ width: '100%', marginBottom: '0.5rem' }} />
+
+            <p>Bakgrunnsmodus:</p>
+            <select value={headerMode} onChange={(e) => { setHeaderMode(e.target.value); setMelding('Husk å lagre tema'); }} style={{ width: '100%', marginBottom: '0.5rem' }}>
+                <option value="cover">Cover</option>
+                <option value="contain">Contain</option>
+                <option value="repeat">Repeat</option>
+            </select>
+
+            <hr />
+
+            <p>Bakgrunnsbilde for appen (URL eller opplasting):</p>
+            <input type="text" value={bakgrunnsbilde} onChange={(e) => { setBakgrunnsbilde(e.target.value); setMelding('Husk å lagre tema'); }}
+                style={{ width: '100%', maxWidth: '500px', margin: '0 auto', marginBottom: '0.5rem', display: 'block' }} />
+            <input type="file" accept="image/*" onChange={handleImageSelect} style={{ marginBottom: '0.5rem' }} />
+            <button onClick={() => handleImageUpload('bakgrunn')}>Last opp bakgrunnsbilde</button>
 
             <p>Bakgrunnsfarge:</p>
-            <input type="color" value={bakgrunnsfarge} onChange={(e) => handleFargeEndring(e.target.value)} style={{ marginBottom: '0.5rem' }} />
+            <input type="color" value={bakgrunnsfarge} onChange={(e) => { setBakgrunnsfarge(e.target.value); setMelding('Husk å lagre tema'); }} style={{ marginBottom: '0.5rem' }} />
 
             {melding && <p style={{ color: 'red', fontWeight: 'bold' }}>{melding}</p>}
 
             <br />
-            <button onClick={lagreTema}>Lagre tema</button>
+            <button onClick={lagreTemaOgHeader}>Lagre tema og header</button>
 
             <hr />
 
             <h3>QR-innstillinger</h3>
             <p>Hytte-nøkkel (hemmelig kode):</p>
-            <input type="text" value={hytteKey} onChange={(e) => setHytteKey(e.target.value)} style={{ width: '100%', marginBottom: '0.5rem' }} />
-
+            <input type="text" value={hytteKey} onChange={(e) => setHytteKey(e.target.value)}
+                style={{ width: '100%', maxWidth: '500px', margin: '0 auto', marginBottom: '0.5rem', display: 'block' }} />
             <button onClick={lagreNokkelOgQR}>Lagre nøkkel og generer QR</button>
 
             {qrDataUrl && (
