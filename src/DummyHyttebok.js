@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, addDoc, serverTimestamp, orderBy, doc, onSnapshot as onDocSnapshot } from 'firebase/firestore';
 import { db } from './firebase';
+import HytteHeader from './HytteHeader';
 
 export default function DummyHyttebok({ t, onAdmin }) {
     const [innlegg, setInnlegg] = useState([]);
@@ -9,8 +10,14 @@ export default function DummyHyttebok({ t, onAdmin }) {
     const [hytteKey, setHytteKey] = useState('');
     const [tilgang, setTilgang] = useState(false);
     const [laster, setLaster] = useState(true);
-    const [bakgrunnsbilde, setBakgrunnsbilde] = useState('');
-    const [bakgrunnsfarge, setBakgrunnsfarge] = useState('#ffffff');
+    const [config, setConfig] = useState({
+        bakgrunnsbilde: '',
+        bakgrunnsfarge: '#ffffff',
+        headerTekst: '',
+        headerBilde: '',
+        headerOpacity: 1,
+        headerMode: 'cover'
+    });
 
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -20,8 +27,14 @@ export default function DummyHyttebok({ t, onAdmin }) {
         const unsubscribeConfig = onDocSnapshot(doc(db, 'config', 'hytte1'), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                setBakgrunnsbilde(data.bakgrunnsbilde || '');
-                setBakgrunnsfarge(data.bakgrunnsfarge || '#ffffff');
+                setConfig({
+                    bakgrunnsbilde: data.bakgrunnsbilde || '',
+                    bakgrunnsfarge: data.bakgrunnsfarge || '#ffffff',
+                    headerTekst: data.headerTekst || '',
+                    headerBilde: data.headerBilde || '',
+                    headerOpacity: data.headerOpacity !== undefined ? data.headerOpacity : 1,
+                    headerMode: data.headerMode || 'cover'
+                });
                 if (key && key === data.hytteKey) {
                     setTilgang(true);
                 }
@@ -68,18 +81,23 @@ export default function DummyHyttebok({ t, onAdmin }) {
     return (
         <div style={{
             minHeight: '100vh',
-            backgroundColor: bakgrunnsfarge,
-            backgroundImage: bakgrunnsbilde ? `url(${bakgrunnsbilde})` : 'none',
+            backgroundColor: config.bakgrunnsfarge,
+            backgroundImage: config.bakgrunnsbilde ? `url(${config.bakgrunnsbilde})` : 'none',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             padding: '1rem',
             textAlign: 'center'
         }}>
+            <HytteHeader
+                headerTekst={config.headerTekst}
+                headerBilde={config.headerBilde}
+                headerOpacity={config.headerOpacity}
+                headerMode={config.headerMode}
+            />
+
             <header style={{ marginBottom: '2rem' }}>
                 <button onClick={onAdmin} style={{ marginRight: '1rem' }}>Admin</button>
             </header>
-
-            <h1>{t('velkommen')}</h1>
 
             {!tilgang && (
                 <div style={{ margin: '2rem auto', maxWidth: '500px', background: 'rgba(255,255,255,0.8)', padding: '1rem', borderRadius: '8px' }}>
