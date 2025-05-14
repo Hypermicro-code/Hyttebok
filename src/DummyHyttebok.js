@@ -77,7 +77,6 @@ export default function DummyHyttebok({ t, onAdmin }) {
         }}>
             <header style={{ marginBottom: '2rem' }}>
                 <button onClick={onAdmin} style={{ marginRight: '1rem' }}>Admin</button>
-                {/* Språkvalg kunne legges her ved behov */}
             </header>
 
             <h1>{t('velkommen')}</h1>
@@ -91,9 +90,12 @@ export default function DummyHyttebok({ t, onAdmin }) {
             {tilgang && (
                 <div style={{ marginBottom: '2rem' }}>
                     <h2>{t('skrivInnlegg')}</h2>
-                    <input type="text" placeholder={t('navn')} value={nyttNavn} onChange={(e) => setNyttNavn(e.target.value)} style={{ width: '100%', marginBottom: '0.5rem' }} />
-                    <textarea placeholder={t('melding')} value={nyttTekst} onChange={(e) => setNyttTekst(e.target.value)} style={{ width: '100%', height: '100px', marginBottom: '0.5rem' }}></textarea>
-                    <button onClick={leggTilInnlegg}>{t('leggTil')}</button>
+                    <input type="text" placeholder={t('navn')} value={nyttNavn} onChange={(e) => setNyttNavn(e.target.value)}
+                        style={{ width: '100%', maxWidth: '500px', margin: '0 auto', marginBottom: '0.5rem', display: 'block' }} />
+                    <textarea placeholder={t('melding')} value={nyttTekst} onChange={(e) => setNyttTekst(e.target.value)}
+                        style={{ width: '100%', maxWidth: '500px', height: '100px', margin: '0 auto', marginBottom: '0.5rem', display: 'block' }}></textarea>
+                    <button onClick={leggTilInnlegg}
+                        style={{ maxWidth: '500px', width: '100%', margin: '0 auto', display: 'block' }}>{t('leggTil')}</button>
                 </div>
             )}
 
