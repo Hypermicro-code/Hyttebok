@@ -31,10 +31,6 @@ export default function AdminQRConfig({ t, tilbake }) {
     }, []);
 
     const lagreNokkelOgQR = async () => {
-        if (!hytteKey.trim()) {
-            alert(t('hytteNokkel') + ' ' + t('melding'));
-            return;
-        }
         try {
             await setDoc(doc(db, 'config', 'hytte1'), {
                 hytteKey,
@@ -109,13 +105,63 @@ export default function AdminQRConfig({ t, tilbake }) {
 
     return (
         <div style={{ maxWidth: '600px', margin: 'auto', padding: '1rem' }}>
-            <button onClick={tilbake}>{t('tilbake')}</button>
-            <h1>{t('adminTittel')}</h1>
+            <button onClick={tilbake}>Tilbake til Hyttebok</button>
+            <h1>Administrer din Hyttebok</h1>
 
-            {/* Tema-innstillinger her */}
-            <h3>{t('temaInnstillinger')}</h3>
-            {/* Resten av koden er som tidligere vist, beholdes uendret */}
-            {/* ... */}
+            <h3>Tema-innstillinger</h3>
+            <div style={{
+                backgroundColor: bakgrunnsfarge,
+                backgroundImage: bakgrunnsbilde ? `url(${bakgrunnsbilde})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                padding: '1rem',
+                border: '1px solid #ccc',
+                borderRadius: '8px',
+                marginBottom: '1rem'
+            }}>
+                <p><strong>Forhåndsvisning:</strong></p>
+                <div style={{ background: 'rgba(255,255,255,0.8)', padding: '0.5rem', borderRadius: '4px' }}>
+                    Dette er hvordan hytteboka vil se ut med valgt tema.
+                </div>
+            </div>
+
+            <p>Bakgrunnsbilde (URL):</p>
+            <input type="text" value={bakgrunnsbilde} onChange={(e) => { setBakgrunnsbilde(e.target.value); setMelding('Husk å lagre tema'); }} style={{ width: '100%', marginBottom: '0.5rem' }} placeholder="https://..." />
+            <input type="file" accept="image/*" onChange={handleImageSelect} style={{ marginBottom: '0.5rem' }} />
+
+            {valgtFil && (
+                <>
+                    <p><strong>Valgt fil:</strong> {valgtFil.name}</p>
+                    <img src={URL.createObjectURL(valgtFil)} alt="Preview" style={{ maxWidth: '100%', marginBottom: '0.5rem', border: '1px solid #ccc' }} />
+                    <button onClick={handleImageUpload}>Last opp bilde</button>
+                    <p>{opplastingStatus}</p>
+                </>
+            )}
+
+            <p>Bakgrunnsfarge:</p>
+            <input type="color" value={bakgrunnsfarge} onChange={(e) => handleFargeEndring(e.target.value)} style={{ marginBottom: '0.5rem' }} />
+
+            {melding && <p style={{ color: 'red', fontWeight: 'bold' }}>{melding}</p>}
+
+            <br />
+            <button onClick={lagreTema}>Lagre tema</button>
+
+            <hr />
+
+            <h3>QR-innstillinger</h3>
+            <p>Hytte-nøkkel (hemmelig kode):</p>
+            <input type="text" value={hytteKey} onChange={(e) => setHytteKey(e.target.value)} style={{ width: '100%', marginBottom: '0.5rem' }} />
+
+            <button onClick={lagreNokkelOgQR}>Lagre nøkkel og generer QR</button>
+
+            {qrDataUrl && (
+                <>
+                    <h3>QR-kode</h3>
+                    <img src={qrDataUrl} alt="QR-kode" style={{ border: '1px solid #ccc', padding: '10px' }} />
+                    <p>Full URL:<br /><a href={fullUrl} target="_blank" rel="noopener noreferrer">{fullUrl}</a></p>
+                    <button onClick={() => navigator.clipboard.writeText(fullUrl).then(() => alert('QR-link kopiert!'))}>Kopier QR-link</button>
+                </>
+            )}
         </div>
     );
 }
