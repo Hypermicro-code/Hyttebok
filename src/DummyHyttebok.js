@@ -5,13 +5,16 @@ import HytteHeader from './HytteHeader';
 
 export default function DummyHyttebok({ t, onAdmin }) {
     const [innlegg, setInnlegg] = useState([]);
+    const [utkast, setUtkast] = useState([]);
     const [nyttNavn, setNyttNavn] = useState('');
     const [nyttTekst, setNyttTekst] = useState('');
+    const [fraDato, setFraDato] = useState('');
+    const [tilDato, setTilDato] = useState('');
     const [hytteKey, setHytteKey] = useState('');
     const [tilgang, setTilgang] = useState(false);
     const [laster, setLaster] = useState(true);
     const [config, setConfig] = useState({});
-    const [valgtVisning, setValgtVisning] = useState('meny'); // meny | vis | nytt
+    const [valgtVisning, setValgtVisning] = useState('meny'); // meny | vis | nytt | utkast
 
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -34,6 +37,7 @@ export default function DummyHyttebok({ t, onAdmin }) {
                 ...doc.data()
             }));
             setInnlegg(innleggData.filter(i => i.status === 'publisert'));
+            setUtkast(innleggData.filter(i => i.status === 'utkast'));
             setLaster(false);
         });
 
@@ -53,18 +57,39 @@ export default function DummyHyttebok({ t, onAdmin }) {
             await addDoc(collection(db, 'innlegg'), {
                 navn: nyttNavn.trim() || 'Anonym',
                 tekst: nyttTekst.trim(),
-                fraDato: null,
-                tilDato: null,
+                fraDato: fraDato || '',
+                tilDato: tilDato || '',
                 status: 'utkast',
                 tidspunkt: serverTimestamp()
             });
-            alert('Innlegg lagret som utkast. Publisering og datovalg kommer i neste steg.');
+            alert('Innlegg lagret som utkast.');
             setNyttNavn('');
             setNyttTekst('');
-            setValgtVisning('vis');
+            setFraDato('');
+            setTilDato('');
+            setValgtVisning('utkast');
         } catch (error) {
             alert('Feil ved lagring: ' + error.message);
         }
+    };
+
+    const publiserInnlegg = async (innlegg) => {
+        try {
+            const ref = doc(db, 'innlegg', innlegg.id);
+            await updateDoc(ref, {
+                status: 'publisert',
+                fraDato: innlegg.fraDato,
+                tilDato: innlegg.tilDato
+            });
+            alert('Innlegg publisert.');
+            setValgtVisning('vis');
+        } catch (error) {
+            alert('Feil ved publisering: ' + error.message);
+        }
+    };
+
+    const redigerDato = (id, felt, verdi) => {
+        setUtkast(utkast.map(u => u.id === id ? { ...u, [felt]: verdi } : u));
     };
 
     return (
@@ -94,6 +119,7 @@ export default function DummyHyttebok({ t, onAdmin }) {
                         <h2>Hva ønsker du å gjøre?</h2>
                         <button onClick={() => setValgtVisning('vis')} style={{ margin: '0.5rem' }}>Se tidligere innlegg</button>
                         <button onClick={() => setValgtVisning('nytt')} style={{ margin: '0.5rem' }}>Skriv nytt innlegg</button>
+                        {utkast.length > 0 && <button onClick={() => setValgtVisning('utkast')} style={{ margin: '0.5rem' }}>Rediger utkast</button>}
                     </div>
                 ) : valgtVisning === 'nytt' ? (
                     <div style={{ marginBottom: '2rem' }}>
@@ -102,8 +128,36 @@ export default function DummyHyttebok({ t, onAdmin }) {
                             style={{ width: '100%', maxWidth: '500px', margin: '0 auto', marginBottom: '0.5rem', display: 'block' }} />
                         <textarea placeholder="Skriv noe hyggelig..." value={nyttTekst} onChange={(e) => setNyttTekst(e.target.value)}
                             style={{ width: '100%', maxWidth: '500px', height: '100px', margin: '0 auto', marginBottom: '0.5rem', display: 'block' }}></textarea>
+                        <label>Fra dato:</label>
+                        <input type="date" value={fraDato} onChange={(e) => setFraDato(e.target.value)}
+                            style={{ width: '100%', maxWidth: '500px', marginBottom: '0.5rem', display: 'block', margin: '0 auto' }} />
+                        <label>Til dato:</label>
+                        <input type="date" value={tilDato} onChange={(e) => setTilDato(e.target.value)}
+                            style={{ width: '100%', maxWidth: '500px', marginBottom: '0.5rem', display: 'block', margin: '0 auto' }} />
                         <button onClick={leggTilUtkast}
                             style={{ maxWidth: '500px', width: '100%', margin: '0 auto', display: 'block' }}>Lagre som utkast</button>
+                    </div>
+                ) : valgtVisning === 'utkast' ? (
+                    <div>
+                        <h2>Dine utkast</h2>
+                        {utkast.length === 0 ? <p>Ingen utkast lagret.</p> : (
+                            <ul style={{ listStyle: 'none', padding: 0, maxWidth: '600px', margin: 'auto' }}>
+                                {utkast.map(item => (
+                                    <li key={item.id} style={{ marginBottom: '1rem', background: 'rgba(255,255,255,0.8)', padding: '1rem', borderRadius: '8px' }}>
+                                        <strong>{item.navn}</strong><br />
+                                        {item.tekst}<br />
+                                        <label>Fra dato:</label>
+                                        <input type="date" value={item.fraDato} onChange={(e) => redigerDato(item.id, 'fraDato', e.target.value)}
+                                            style={{ width: '100%', maxWidth: '300px', marginBottom: '0.5rem' }} />
+                                        <label>Til dato:</label>
+                                        <input type="date" value={item.tilDato} onChange={(e) => redigerDato(item.id, 'tilDato', e.target.value)}
+                                            style={{ width: '100%', maxWidth: '300px', marginBottom: '0.5rem' }} />
+                                        <br />
+                                        <button onClick={() => publiserInnlegg(item)}>Publiser innlegg</button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
                 ) : (
                     <>
