@@ -6,10 +6,6 @@ import HytteHeader from './HytteHeader';
 export default function DummyHyttebok({ t, onAdmin }) {
     const [innlegg, setInnlegg] = useState([]);
     const [utkast, setUtkast] = useState([]);
-    const [nyttNavn, setNyttNavn] = useState('');
-    const [nyttTekst, setNyttTekst] = useState('');
-    const [fraDato, setFraDato] = useState('');
-    const [tilDato, setTilDato] = useState('');
     const [hytteKey, setHytteKey] = useState('');
     const [tilgang, setTilgang] = useState(false);
     const [laster, setLaster] = useState(true);
@@ -47,39 +43,48 @@ export default function DummyHyttebok({ t, onAdmin }) {
         };
     }, []);
 
-    const leggTilUtkast = async () => {
-        if (!nyttTekst.trim()) {
+    const leggTilUtkast = async (navn, tekst, fraDato, tilDato) => {
+        if (!tekst.trim()) {
             alert('Melding må fylles ut');
             return;
         }
 
         try {
             await addDoc(collection(db, 'innlegg'), {
-                navn: nyttNavn.trim() || 'Anonym',
-                tekst: nyttTekst.trim(),
+                navn: navn.trim() || 'Anonym',
+                tekst: tekst.trim(),
                 fraDato: fraDato || '',
                 tilDato: tilDato || '',
                 status: 'utkast',
                 tidspunkt: serverTimestamp()
             });
             alert('Innlegg lagret som utkast.');
-            setNyttNavn('');
-            setNyttTekst('');
-            setFraDato('');
-            setTilDato('');
             setValgtVisning('utkast');
         } catch (error) {
             alert('Feil ved lagring: ' + error.message);
         }
     };
 
-    const publiserInnlegg = async (innlegg) => {
+    const lagreEndringerUtkast = async (item) => {
         try {
-            const ref = doc(db, 'innlegg', innlegg.id);
+            const ref = doc(db, 'innlegg', item.id);
             await updateDoc(ref, {
-                status: 'publisert',
-                fraDato: innlegg.fraDato,
-                tilDato: innlegg.tilDato
+                navn: item.navn,
+                tekst: item.tekst,
+                fraDato: item.fraDato,
+                tilDato: item.tilDato
+            });
+            alert('Endringer lagret.');
+        } catch (error) {
+            alert('Feil ved lagring: ' + error.message);
+        }
+    };
+
+    const publiserInnlegg = async (item) => {
+        try {
+            const ref = doc(db, 'innlegg', item.id);
+            await updateDoc(ref, {
+                status: 'publisert'
             });
             alert('Innlegg publisert.');
             setValgtVisning('vis');
@@ -88,7 +93,7 @@ export default function DummyHyttebok({ t, onAdmin }) {
         }
     };
 
-    const redigerDato = (id, felt, verdi) => {
+    const redigerFelt = (id, felt, verdi) => {
         setUtkast(utkast.map(u => u.id === id ? { ...u, [felt]: verdi } : u));
     };
 
@@ -122,21 +127,7 @@ export default function DummyHyttebok({ t, onAdmin }) {
                         {utkast.length > 0 && <button onClick={() => setValgtVisning('utkast')} style={{ margin: '0.5rem' }}>Rediger utkast</button>}
                     </div>
                 ) : valgtVisning === 'nytt' ? (
-                    <div style={{ marginBottom: '2rem' }}>
-                        <h2>Skriv nytt innlegg (utkast)</h2>
-                        <input type="text" placeholder="Navn (valgfritt)" value={nyttNavn} onChange={(e) => setNyttNavn(e.target.value)}
-                            style={{ width: '100%', maxWidth: '500px', margin: '0 auto', marginBottom: '0.5rem', display: 'block' }} />
-                        <textarea placeholder="Skriv noe hyggelig..." value={nyttTekst} onChange={(e) => setNyttTekst(e.target.value)}
-                            style={{ width: '100%', maxWidth: '500px', height: '100px', margin: '0 auto', marginBottom: '0.5rem', display: 'block' }}></textarea>
-                        <label>Fra dato:</label>
-                        <input type="date" value={fraDato} onChange={(e) => setFraDato(e.target.value)}
-                            style={{ width: '100%', maxWidth: '500px', marginBottom: '0.5rem', display: 'block', margin: '0 auto' }} />
-                        <label>Til dato:</label>
-                        <input type="date" value={tilDato} onChange={(e) => setTilDato(e.target.value)}
-                            style={{ width: '100%', maxWidth: '500px', marginBottom: '0.5rem', display: 'block', margin: '0 auto' }} />
-                        <button onClick={leggTilUtkast}
-                            style={{ maxWidth: '500px', width: '100%', margin: '0 auto', display: 'block' }}>Lagre som utkast</button>
-                    </div>
+                    <NyttInnleggForm onLagre={leggTilUtkast} />
                 ) : valgtVisning === 'utkast' ? (
                     <div>
                         <h2>Dine utkast</h2>
@@ -144,16 +135,19 @@ export default function DummyHyttebok({ t, onAdmin }) {
                             <ul style={{ listStyle: 'none', padding: 0, maxWidth: '600px', margin: 'auto' }}>
                                 {utkast.map(item => (
                                     <li key={item.id} style={{ marginBottom: '1rem', background: 'rgba(255,255,255,0.8)', padding: '1rem', borderRadius: '8px' }}>
-                                        <strong>{item.navn}</strong><br />
-                                        {item.tekst}<br />
+                                        <input type="text" value={item.navn} onChange={(e) => redigerFelt(item.id, 'navn', e.target.value)}
+                                            style={{ width: '100%', marginBottom: '0.5rem' }} />
+                                        <textarea value={item.tekst} onChange={(e) => redigerFelt(item.id, 'tekst', e.target.value)}
+                                            style={{ width: '100%', height: '100px', marginBottom: '0.5rem' }} />
                                         <label>Fra dato:</label>
-                                        <input type="date" value={item.fraDato} onChange={(e) => redigerDato(item.id, 'fraDato', e.target.value)}
+                                        <input type="date" value={item.fraDato} onChange={(e) => redigerFelt(item.id, 'fraDato', e.target.value)}
                                             style={{ width: '100%', maxWidth: '300px', marginBottom: '0.5rem' }} />
                                         <label>Til dato:</label>
-                                        <input type="date" value={item.tilDato} onChange={(e) => redigerDato(item.id, 'tilDato', e.target.value)}
+                                        <input type="date" value={item.tilDato} onChange={(e) => redigerFelt(item.id, 'tilDato', e.target.value)}
                                             style={{ width: '100%', maxWidth: '300px', marginBottom: '0.5rem' }} />
                                         <br />
-                                        <button onClick={() => publiserInnlegg(item)}>Publiser innlegg</button>
+                                        <button onClick={() => lagreEndringerUtkast(item)}>Lagre endringer</button>
+                                        <button onClick={() => publiserInnlegg(item)} style={{ marginLeft: '0.5rem' }}>Publiser innlegg</button>
                                     </li>
                                 ))}
                             </ul>
@@ -184,6 +178,31 @@ export default function DummyHyttebok({ t, onAdmin }) {
                     <p>{t('ikkeTilgang')}</p>
                 </div>
             )}
+        </div>
+    );
+}
+
+function NyttInnleggForm({ onLagre }) {
+    const [navn, setNavn] = useState('');
+    const [tekst, setTekst] = useState('');
+    const [fraDato, setFraDato] = useState('');
+    const [tilDato, setTilDato] = useState('');
+
+    return (
+        <div style={{ marginBottom: '2rem' }}>
+            <h2>Skriv nytt innlegg (utkast)</h2>
+            <input type="text" placeholder="Navn (valgfritt)" value={navn} onChange={(e) => setNavn(e.target.value)}
+                style={{ width: '100%', maxWidth: '500px', margin: '0 auto', marginBottom: '0.5rem', display: 'block' }} />
+            <textarea placeholder="Skriv noe hyggelig..." value={tekst} onChange={(e) => setTekst(e.target.value)}
+                style={{ width: '100%', maxWidth: '500px', height: '100px', margin: '0 auto', marginBottom: '0.5rem', display: 'block' }}></textarea>
+            <label>Fra dato:</label>
+            <input type="date" value={fraDato} onChange={(e) => setFraDato(e.target.value)}
+                style={{ width: '100%', maxWidth: '500px', marginBottom: '0.5rem', display: 'block', margin: '0 auto' }} />
+            <label>Til dato:</label>
+            <input type="date" value={tilDato} onChange={(e) => setTilDato(e.target.value)}
+                style={{ width: '100%', maxWidth: '500px', marginBottom: '0.5rem', display: 'block', margin: '0 auto' }} />
+            <button onClick={() => onLagre(navn, tekst, fraDato, tilDato)}
+                style={{ maxWidth: '500px', width: '100%', margin: '0 auto', display: 'block' }}>Lagre som utkast</button>
         </div>
     );
 }
