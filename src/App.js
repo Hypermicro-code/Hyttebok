@@ -1,18 +1,31 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import DummyHyttebok from './DummyHyttebok';
 import AdminQRConfig from './AdminQRConfig';
 import no from './lang/no';
 import en from './lang/en';
-
-const valgtSpråk = 'no'; // Sett til 'en' for engelsk
-const t = valgtSpråk === 'no' ? no : en;
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from './firebase';
 
 export default function App() {
-    const [visAdmin, setVisAdmin] = useState(false);
+  const [visAdmin, setVisAdmin] = useState(false);
+  const [språk, setSpråk] = useState('no');
+  const [t, setT] = useState(() => (key) => key); // fallback t()
 
-    return visAdmin ? (
-        <AdminQRConfig t={(key) => t[key] || key} tilbake={() => setVisAdmin(false)} />
-    ) : (
-        <DummyHyttebok t={(key) => t[key] || key} onAdmin={() => setVisAdmin(true)} />
-    );
+  useEffect(() => {
+    const hentSpråk = async () => {
+      const snap = await getDoc(doc(db, 'config', 'hytte1'));
+      if (snap.exists()) {
+        const data = snap.data();
+        const valgtSpråk = data?.språk || 'no';
+        setSpråk(valgtSpråk);
+        const valgtT = valgtSpråk === 'en' ? en : no;
+        setT(() => (key) => valgtT[key] || key);
+      }
+    };
+    hentSpråk();
+  }, []);
+
+  return visAdmin
+    ? <AdminQRConfig t={t} tilbake={() => setVisAdmin(false)} />
+    : <DummyHyttebok t={t} onAdmin={() => setVisAdmin(true)} />;
 }
