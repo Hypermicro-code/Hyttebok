@@ -37,7 +37,7 @@ export default function AdminQRConfig({ t, tilbake }) {
   const lagreConfig = async () => {
     try {
       await setDoc(doc(db, 'config', 'hytte1'), config);
-      alert('Innstillinger lagret.');
+      alert(t('lagreTema'));
       genererQR(config.hytteKey);
     } catch (err) {
       alert('Feil ved lagring: ' + err.message);
@@ -59,28 +59,28 @@ export default function AdminQRConfig({ t, tilbake }) {
     const file = e.target.files[0];
     if (file) {
       setValgtFil(file);
-      setOpplastingStatus('Fil valgt – klar til opplasting');
+      setOpplastingStatus(t('klarTilOpplasting'));
     }
   };
 
   const handleImageUpload = async (type) => {
     if (!valgtFil) {
-      alert('Velg en fil først');
+      alert(t('velgFilFørOpplasting'));
       return;
     }
     const refPath = `${type === 'header' ? 'headerbilder' : 'bakgrunnsbilder'}/${valgtFil.name}`;
     const storageRef = ref(storage, refPath);
     try {
-      setOpplastingStatus('Laster opp...');
+      setOpplastingStatus(t('lasterOpp'));
       await uploadBytes(storageRef, valgtFil);
       const url = await getDownloadURL(storageRef);
       setConfig(prev => ({
         ...prev,
         [type === 'header' ? 'headerBilde' : 'bakgrunnsbilde']: url
       }));
-      setOpplastingStatus('Opplasting ferdig');
+      setOpplastingStatus(t('opplastingFerdig'));
     } catch (err) {
-      setOpplastingStatus('Feil ved opplasting: ' + err.message);
+      setOpplastingStatus(t('feilOpplasting') + ': ' + err.message);
     }
   };
 
@@ -131,12 +131,11 @@ export default function AdminQRConfig({ t, tilbake }) {
             placeholder="https://..."
             style={{ width: '100%', marginBottom: '0.5rem' }}
           />
-          <label htmlFor="filvalg">{t('velgFil')}</label><br />
-<input id="filvalg" type="file" accept="image/*" onChange={handleImageSelect} />
-<p style={{ fontStyle: 'italic', color: '#666' }}>{valgtFil?.name || t('ingenFilValgt')}</p>
-
+          <label htmlFor="bgfile">{t('velgFil')}</label><br />
+          <input id="bgfile" type="file" accept="image/*" onChange={handleImageSelect} />
+          <p style={{ fontStyle: 'italic' }}>{valgtFil?.name || t('ingenFilValgt')}</p>
           <button onClick={() => handleImageUpload('bakgrunn')}>{t('lastOppBilde')}</button>
-          <p>{opplastingStatus}</p>
+
           <p>Headertekst:</p>
           <input
             type="text"
@@ -144,11 +143,11 @@ export default function AdminQRConfig({ t, tilbake }) {
             onChange={(e) => setConfig({ ...config, headerTekst: e.target.value })}
             style={{ width: '100%', marginBottom: '0.5rem' }}
           />
-         <label htmlFor="filvalg">{t('velgFil')}</label><br />
-<input id="filvalg" type="file" accept="image/*" onChange={handleImageSelect} />
-<p style={{ fontStyle: 'italic', color: '#666' }}>{valgtFil?.name || t('ingenFilValgt')}</p>
-
+          <label htmlFor="headerfile">{t('velgFil')}</label><br />
+          <input id="headerfile" type="file" accept="image/*" onChange={handleImageSelect} />
+          <p style={{ fontStyle: 'italic' }}>{valgtFil?.name || t('ingenFilValgt')}</p>
           <button onClick={() => handleImageUpload('header')}>{t('lastOppBilde')}</button>
+
           <p>Opacity:</p>
           <input
             type="range"
@@ -167,6 +166,7 @@ export default function AdminQRConfig({ t, tilbake }) {
             <option value="contain">Contain</option>
             <option value="repeat">Repeat</option>
           </select>
+          <p style={{ fontWeight: 'bold' }}>{opplastingStatus}</p>
           <button onClick={lagreConfig}>{t('lagreTema')}</button>
           <button onClick={() => setAktivSeksjon('meny')} style={{ marginLeft: '1rem' }}>{t('tilbakeMeny')}</button>
         </>
