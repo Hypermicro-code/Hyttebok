@@ -38,6 +38,10 @@ const t = {
   temaer: "Themes (background, header)",
   qrKodeSeksjon: "QR code and key",
   tilbakeMeny: "Back to menu",
+  tilbakeHyttebok: "Back to Guestbook",
+  lagre: "Save",
+  velgFil: "Choose file",
+  ingenFilValgt: "No file selected",
 };
 
 export default t;
