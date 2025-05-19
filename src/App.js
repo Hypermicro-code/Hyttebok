@@ -3,26 +3,24 @@ import DummyHyttebok from './DummyHyttebok';
 import AdminQRConfig from './AdminQRConfig';
 import no from './lang/no';
 import en from './lang/en';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from './firebase';
 
 export default function App() {
   const [visAdmin, setVisAdmin] = useState(false);
-  const [språk, setSpråk] = useState('no');
-  const [t, setT] = useState(() => (key) => key); // fallback t()
+  const [t, setT] = useState(() => (key) => key); // fallback inntil lastet
 
   useEffect(() => {
-    const hentSpråk = async () => {
-      const snap = await getDoc(doc(db, 'config', 'hytte1'));
+    const unsubscribe = onSnapshot(doc(db, 'config', 'hytte1'), (snap) => {
       if (snap.exists()) {
         const data = snap.data();
         const valgtSpråk = data?.språk || 'no';
-        setSpråk(valgtSpråk);
         const valgtT = valgtSpråk === 'en' ? en : no;
         setT(() => (key) => valgtT[key] || key);
       }
-    };
-    hentSpråk();
+    });
+
+    return () => unsubscribe();
   }, []);
 
   return visAdmin
