@@ -86,7 +86,7 @@ export default function AdminQRConfig({ t, tilbake }) {
 
   return (
     <div style={{ maxWidth: '600px', margin: 'auto', padding: '1rem' }}>
-      <button onClick={tilbake}>Tilbake til Hyttebok</button>
+      <button onClick={tilbake}>{t('tilbakeHyttebok')}</button>
       <h1>{t('adminTittel')}</h1>
 
       {aktivSeksjon === 'meny' && (
@@ -108,7 +108,7 @@ export default function AdminQRConfig({ t, tilbake }) {
             <option value="no">Norsk (dd.mm.yyyy)</option>
             <option value="en">English (mm/dd/yyyy)</option>
           </select>
-          <button onClick={lagreConfig}>Lagre</button>
+          <button onClick={lagreConfig}>{t('lagre')}</button>
           <button onClick={() => setAktivSeksjon('meny')} style={{ marginLeft: '1rem' }}>{t('tilbakeMeny')}</button>
         </>
       )}
@@ -131,7 +131,10 @@ export default function AdminQRConfig({ t, tilbake }) {
             placeholder="https://..."
             style={{ width: '100%', marginBottom: '0.5rem' }}
           />
-          <input type="file" accept="image/*" onChange={handleImageSelect} />
+          <label htmlFor="filvalg">{t('velgFil')}</label><br />
+<input id="filvalg" type="file" accept="image/*" onChange={handleImageSelect} />
+<p style={{ fontStyle: 'italic', color: '#666' }}>{valgtFil?.name || t('ingenFilValgt')}</p>
+
           <button onClick={() => handleImageUpload('bakgrunn')}>{t('lastOppBilde')}</button>
           <p>{opplastingStatus}</p>
           <p>Headertekst:</p>
@@ -141,7 +144,10 @@ export default function AdminQRConfig({ t, tilbake }) {
             onChange={(e) => setConfig({ ...config, headerTekst: e.target.value })}
             style={{ width: '100%', marginBottom: '0.5rem' }}
           />
-          <input type="file" accept="image/*" onChange={handleImageSelect} />
+         <label htmlFor="filvalg">{t('velgFil')}</label><br />
+<input id="filvalg" type="file" accept="image/*" onChange={handleImageSelect} />
+<p style={{ fontStyle: 'italic', color: '#666' }}>{valgtFil?.name || t('ingenFilValgt')}</p>
+
           <button onClick={() => handleImageUpload('header')}>{t('lastOppBilde')}</button>
           <p>Opacity:</p>
           <input
